@@ -1,16 +1,6 @@
 #include <iostream>
 #include "SyntaxAnalyzer.h"
 
-bool containsType(const std::string &word)
-{
-    for(const std::string &type : Token::types)
-    {
-        if(word == type) return true;
-    }
-
-    return false;
-}
-
 void SyntaxAnalyzer::run() throw()
 {
     std::cout << "Analyzing syntax..." << std::endl;
@@ -23,32 +13,19 @@ void SyntaxAnalyzer::program() throw()
 {
     //keyword: 'program'
     currentToken = &tokens.at(count); //count == 0
-    if (currentToken->getText() != "program")
-    {
-        syntaxError("Keyword 'program' was not found!");
-    }
+    if (currentToken->getText() != "program") syntaxError("Keyword 'program' was not found!");
 
     //enter into global scope
     symbolsTable.enterScope();
-
     //identifier: name of the program
     getNextToken();
-    if (currentToken->getClassification() != Token::Classifications::IDENTIFIER)
-    {
-        syntaxError("Invalid identifier for program!");
-    }
+    if (currentToken->getClassification() != Token::Classifications::IDENTIFIER) syntaxError("Invalid identifier for program!");
 
     std::string pr = "program";
-    Symbol symbol(currentToken->getText(), pr);
-    symbolsTable.addSymbol(symbol);
-
-
+    symbolsTable.addSymbol(currentToken->getText(), pr);
     //identifier: ';'
     getNextToken();
-    if (currentToken->getText() != ";")
-    {
-        syntaxError("Symbol ';' was not found!");
-    }
+    if (currentToken->getText() != ";") syntaxError("Symbol ';' was not found!");
 
     //control flow
     varDeclaration();
@@ -60,10 +37,7 @@ void SyntaxAnalyzer::program() throw()
 
     //delimiter: '.'
     getNextToken();
-    if (currentToken->getText() != ".")
-    {
-        syntaxError("Symbol '.' was not found!");
-    }
+    if (currentToken->getText() != ".") syntaxError("Symbol '.' was not found!");
 }
 
 void SyntaxAnalyzer::varDeclaration() throw()
@@ -84,18 +58,12 @@ void SyntaxAnalyzer::varDeclarationListA() throw()
     identifiersListA();
 
     getNextToken();
-    if (currentToken->getText()!= ":")
-    {
-        syntaxError("Symbol ':' was not found!");
-    }
+    if (currentToken->getText()!= ":") syntaxError("Symbol ':' was not found!");
 
     type();
 
     getNextToken();
-    if (currentToken->getText() != ";")
-    {
-        syntaxError("Symbol ';' was not found!");
-    }
+    if (currentToken->getText() != ";") syntaxError("Symbol ';' was not found!");
 
     varDeclarationListB();
 }
@@ -112,18 +80,12 @@ void SyntaxAnalyzer::varDeclarationListB() throw()
     identifiersListA();
 
     getNextToken();
-    if (currentToken->getText() != ":")
-    {
-        syntaxError("Symbol ':' was not found!");
-    }
+    if (currentToken->getText() != ":") syntaxError("Symbol ':' was not found!");
 
     type();
 
     getNextToken();
-    if (currentToken->getText() != ";")
-    {
-        syntaxError("Symbol ';' was not found!");
-    }
+    if (currentToken->getText() != ";") syntaxError("Symbol ';' was not found!");
 
     varDeclarationListB();
 }
@@ -131,24 +93,16 @@ void SyntaxAnalyzer::varDeclarationListB() throw()
 void SyntaxAnalyzer::identifiersListA() throw()
 {
     getNextToken();
-    if (currentToken->getClassification() != (Token::Classifications::IDENTIFIER))
-    {
-        syntaxError("Invalid identifier!");
-    }
-
+    if (currentToken->getClassification() != (Token::Classifications::IDENTIFIER)) syntaxError("Invalid identifier!");
 
     if(symbolsTable.getProgramName() == (currentToken->getText())) semanticError("Identifier has the same program name");
-    //Checks whether the current identifier is declared elsewhere in the same scope
-    if(symbolsTable.searchDuplicateDeclaration(currentToken->getText()))
-    {
-        semanticError("Duplicate identifier!");
-    }
 
+    //Checks whether the current identifier is declared elsewhere in the same scope
+    if(symbolsTable.searchDuplicateDeclaration(currentToken->getText())) semanticError("Duplicate identifier!");
 
     //If not, put the identifier into stack
-    Symbol symbol(currentToken->getText());
-    symbolsTable.addSymbol(symbol);
-
+    std::string str_void = "void";
+    symbolsTable.addSymbol(currentToken->getText(), str_void);
     identifiersListB();
 }
 
@@ -162,22 +116,16 @@ void SyntaxAnalyzer::identifiersListB() throw()
     }
 
     getNextToken();
-    if (currentToken->getClassification() != (Token::Classifications::IDENTIFIER))
-    {
-        syntaxError("Invalid identifier!");
-    }
+    if (currentToken->getClassification() != (Token::Classifications::IDENTIFIER)) syntaxError("Invalid identifier!");
 
     if(symbolsTable.getProgramName() == (currentToken->getText())) semanticError("Identifier has the same program name");
-    //Checks whether the current identifier is declared elsewhere in the same scope
-    if(symbolsTable.searchDuplicateDeclaration(currentToken->getText()))
-    {
-        semanticError("Duplicate identifier!");
-    }
 
+    //Checks whether the current identifier is declared elsewhere in the same scope
+    if(symbolsTable.searchDuplicateDeclaration(currentToken->getText())) semanticError("Duplicate identifier!");
 
     //If not, put the identifier into stack
-    Symbol symbol(currentToken->getText());
-    symbolsTable.addSymbol(symbol);
+    std::string str_void = "void";
+    symbolsTable.addSymbol(currentToken->getText(), str_void);
 
     identifiersListB();
 }
@@ -185,10 +133,7 @@ void SyntaxAnalyzer::identifiersListB() throw()
 void SyntaxAnalyzer::type() throw()
 {
     getNextToken();
-    if (!containsType(currentToken->getText()))
-    {
-        syntaxError("Invalid type!");
-    }
+    if (!containsType(currentToken->getText())) syntaxError("Invalid type!");
 
     symbolsTable.assignType(currentToken->getText());
 }
@@ -221,17 +166,13 @@ void SyntaxAnalyzer::subProgram() throw()
     }
 
     if(symbolsTable.getProgramName() == (currentToken->getText())) semanticError("Identifier has the same program name");
-    //Checks whether the current identifier is declared elsewhere in the same scope
-    if(symbolsTable.searchDuplicateDeclaration(currentToken->getText()))
-    {
-        semanticError("Duplicate identifier!");
-    }
 
+    //Checks whether the current identifier is declared elsewhere in the same scope
+    if(symbolsTable.searchDuplicateDeclaration(currentToken->getText())) semanticError("Duplicate identifier!");
 
     //If not, put the identifier into stack
     std::string pr = "procedure";
-    Symbol symbol(currentToken->getText(), pr);
-    symbolsTable.addSymbol(symbol);
+    symbolsTable.addSymbol(currentToken->getText(), pr);
 
     //enter into local scope
     symbolsTable.enterScope();
@@ -271,10 +212,7 @@ void SyntaxAnalyzer::arguments() throw()
         parameterListA();
 
         getNextToken();
-        if (currentToken->getText() != ")")
-        {
-            syntaxError("Symbol ')' was not found!");
-        }
+        if (currentToken->getText() != ")") syntaxError("Symbol ')' was not found!");
     }
 }
 
@@ -282,10 +220,7 @@ void SyntaxAnalyzer::parameterListA() throw()
 {
     identifiersListA();
     getNextToken();
-    if (currentToken->getText() != ":")
-    {
-       syntaxError("Symbol ':' was not found!");
-    }
+    if (currentToken->getText() != ":") syntaxError("Symbol ':' was not found!");
 
     type();
 
@@ -319,18 +254,12 @@ void SyntaxAnalyzer::parameterListB() throw()
 void SyntaxAnalyzer::compoundCommand() throw()
 {
     getNextToken();
-    if (currentToken->getText() != "begin")
-    {
-        syntaxError("Keyword 'Begin' was not found!");
-    }
+    if (currentToken->getText() != "begin") syntaxError("Keyword 'Begin' was not found!");
 
     optionalCommands();
 
     getNextToken();
-    if (currentToken->getText() != "end")
-    {
-        syntaxError("Keyword 'End' was not found!");
-    }
+    if (currentToken->getText() != "end") syntaxError("Keyword 'End' was not found!");
 }
 
 void SyntaxAnalyzer::optionalCommands() throw()
@@ -378,12 +307,9 @@ void SyntaxAnalyzer::command() throw()
     if (currentToken->getClassification() == (Token::Classifications::IDENTIFIER))
     {
         if(symbolsTable.getProgramName() == (currentToken->getText())) semanticError("Program name cannot be used");
-        //Checks whether the current identifier is declared elsewhere
-        if(!symbolsTable.searchIdentifier(currentToken->getText()))
-        {
-            semanticError("Using not declared identifier!");
-        }
 
+        //Checks whether the current identifier is declared elsewhere
+        if(!symbolsTable.searchIdentifier(currentToken->getText())) semanticError("Using not declared identifier!");
 
         std::string &resultClassification = symbolsTable.getType(currentToken->getText());
         getNextToken();
@@ -392,13 +318,8 @@ void SyntaxAnalyzer::command() throw()
             typeControl.pushMark();
             expression();
 
-            try{
-                typeControl.popMark();
-                typeControl.verifyResult(resultClassification);
-            }catch (std::exception &e) {
-                e.what();
-            }
-
+            typeControl.popMark();
+            typeControl.verifyResult(resultClassification);
         }
         else
         {
@@ -413,12 +334,10 @@ void SyntaxAnalyzer::command() throw()
         typeControl.pushMark();
         expression();
 
-        try{
-            typeControl.popMark();
-            typeControl.verifyResult(resultClassification);
-        }catch (std::exception &e) {
-            e.what();
-        }
+
+        typeControl.popMark();
+        typeControl.verifyResult(resultClassification);
+
 
         getNextToken();
         if (currentToken->getText() != "then")
@@ -436,12 +355,9 @@ void SyntaxAnalyzer::command() throw()
         std::string resultClassification = "boolean";
         typeControl.pushMark();
         expression();
-        try{
-            typeControl.popMark();
-            typeControl.verifyResult(resultClassification);
-        } catch (std::exception &e) {
-            e.what();
-        }
+
+        typeControl.popMark();
+        typeControl.verifyResult(resultClassification);
 
         getNextToken();
         if (currentToken->getText() != "do")
@@ -466,12 +382,9 @@ void SyntaxAnalyzer::command() throw()
         std::string resultClassification = "boolean";
         typeControl.pushMark();
         expression();
-        try{
-            typeControl.popMark();
-            typeControl.verifyResult(resultClassification);
-        } catch (std::exception &e) {
-            e.what();
-        }
+
+        typeControl.popMark();
+        typeControl.verifyResult(resultClassification);
 
     }
     else if (currentToken->getText() == "begin")
@@ -480,10 +393,8 @@ void SyntaxAnalyzer::command() throw()
         count--;
         compoundCommand();
     }
-    else
-    {
-        syntaxError("Invalid command.");
-    }
+    else syntaxError("Invalid command.");
+
 }
 void SyntaxAnalyzer::commandStructure() throw()
 {
@@ -515,11 +426,7 @@ void SyntaxAnalyzer::elsePart() throw()
 void SyntaxAnalyzer::procedureActivationA() throw()
 {
     getNextToken();
-    if (currentToken->getClassification() != Token::Classifications::IDENTIFIER)
-    {
-        syntaxError("Invalid identifier!");
-    }
-
+    if (currentToken->getClassification() != Token::Classifications::IDENTIFIER) syntaxError("Invalid identifier!");
     typeControl.setCallProcedure(true, symbolsTable.getProcedure(currentToken->getText()));
     getNextToken();
     if (currentToken->getText() != "(")
@@ -545,26 +452,17 @@ void SyntaxAnalyzer::expressionListA() throw()
         typeControl.pushMark();
         expression();
 
+        typeControl.popMark();
 
-        try {
-            typeControl.popMark();
-
-            if(typeControl.isCallProcedure()) {
-                typeControl.pushParameter(typeControl.getFirstType());
-                typeControl.reset();
-            }
-        }  catch (std::exception &e) {
-            e.what();
+        if(typeControl.isCallProcedure()) {
+            typeControl.pushParameter(typeControl.getFirstType());
+            typeControl.reset();
         }
-
 
         expressionListB();
 
         getNextToken();
-        if (currentToken->getText() != ")")
-        {
-            syntaxError("Symbol ')' was not found!");
-        }
+        if (currentToken->getText() != ")") syntaxError("Symbol ')' was not found!");
     }
 }
 
@@ -574,15 +472,7 @@ void SyntaxAnalyzer::expressionListB() throw()
     if (currentToken->getText()!= ",")
     {
         count--;
-
-
-        try {
-            typeControl.verifyResultProcedureCall();
-        } catch (std::exception &e) {
-            e.what();
-        }
-
-
+        typeControl.verifyResultProcedureCall();
 
         return;
     }
@@ -591,17 +481,12 @@ void SyntaxAnalyzer::expressionListB() throw()
     expression();
 
 
-    try {
-        typeControl.popMark();
+    typeControl.popMark();
 
-        if(typeControl.isCallProcedure()) {
-            typeControl.pushParameter(typeControl.getFirstType());
-            typeControl.reset();
-        }
-    } catch (std::exception &e) {
-        e.what();
+    if(typeControl.isCallProcedure()) {
+        typeControl.pushParameter(typeControl.getFirstType());
+        typeControl.reset();
     }
-
 
     expressionListB();
 }
@@ -679,22 +564,15 @@ void SyntaxAnalyzer::factor() throw()
     getNextToken();
     if (currentToken->getClassification() == (Token::Classifications::IDENTIFIER))
     {
-
         if(symbolsTable.getProgramName() == (currentToken->getText())) semanticError("Program name cannot be used");
+
         //Checks whether the current identifier is declared elsewhere
-        if(!symbolsTable.searchIdentifier(currentToken->getText()))
-        {
-            semanticError("Using not declared identifier!");
-        }
+        if(!symbolsTable.searchIdentifier(currentToken->getText())) semanticError("Using not declared identifier!");
 
 
-        try {
-            std::string &type = symbolsTable.getType(currentToken->getText());
-            typeControl.pushType(type);
-        } catch (std::exception &e) {
-            e.what();
+        std::string &type = symbolsTable.getType(currentToken->getText());
+        typeControl.pushType(type);
 
-        }
         getNextToken();
         count--;
         if (currentToken->getText() == "(")
@@ -707,12 +585,7 @@ void SyntaxAnalyzer::factor() throw()
         typeControl.pushMark();
         expression();
 
-
-        try {
-            typeControl.popMark();
-        } catch (std::exception &e) {
-            e.what();
-        }
+        typeControl.popMark();
 
 
         getNextToken();
@@ -728,12 +601,10 @@ void SyntaxAnalyzer::factor() throw()
     }
     else if (containsType(currentToken->getClassificationName()))
     {
-        try{
-            std::string type = currentToken->getClassificationName();
-            typeControl.pushType(type);
-        } catch (std::exception &e) {
-            e.what();
-        }
+
+        std::string type = currentToken->getClassificationName();
+        typeControl.pushType(type);
+
     }
     else {
         count--;

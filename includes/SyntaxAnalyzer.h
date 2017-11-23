@@ -24,6 +24,17 @@ private:
 public:
     SyntaxAnalyzer(std::vector<Token> &t, bool D) : tokens(t), DEBUG_MODE(D) {}
 
+    SyntaxAnalyzer (const SyntaxAnalyzer &that)
+    {
+        tokens = that.tokens;
+        currentToken = that.currentToken;
+        count = that.count;
+        DEBUG_MODE = that.DEBUG_MODE;
+
+        symbolsTable = that.symbolsTable;
+        typeControl = that.typeControl;
+    }
+
     explicit SyntaxAnalyzer(std::vector<Token> &tokens) : SyntaxAnalyzer(tokens, true) {}
 
     SyntaxAnalyzer() = default;
@@ -65,14 +76,24 @@ private:
         count++;
         if (count >= tokens.size())
         {
-            count = tokens.size() - 1;
-            //syntaxError("No more tokens to be read.");
+            count = static_cast<unsigned int>(tokens.size() - 1);
+            syntaxError("No more tokens to be read.");
         }
         if (this->DEBUG_MODE)
         {
-            //System.out.println("Reading token: " + tokens.get(count).getText());
+            std::cout << "Reading token: " << tokens.at(count).getText() << std::endl;
         }
         currentToken = &tokens.at(count);
+    }
+
+    bool containsType(const std::string &word) const
+    {
+        for(const std::string &type : Token::types)
+        {
+            if(word == type) return true;
+        }
+
+        return false;
     }
 
     void syntaxError(const std::string &errorMsg) throw()
@@ -85,8 +106,7 @@ private:
     void semanticError(const std::string &errorMsg) throw()
     {
         std::string str = "Semantic Error! Line " + std::to_string(currentToken->getLineNumber()) + ":\n" +
-                currentToken->getText() + "\n" +
-                errorMsg;
+                currentToken->getText() + "\n" + errorMsg;
         throw SemanticException(str);
     }
 };

@@ -25,13 +25,22 @@ public:
 
     TypeControl() = default;
 
-    void pushMark() {
+    TypeControl(TypeControl &that)
+    {
+        stackExpression = that.stackExpression;
+        operationStack = that.operationStack;
+        procedureParametersStack = that.procedureParametersStack;
+
+    }
+
+    void pushMark()
+    {
         stackExpression.push_back(MARK);
     }
 
     void popMark() throw()
     {
-            int i = stackExpression.size()-1;
+            auto i = stackExpression.size()-1;
             std::string &result = stackExpression.at(i);
 
             stackExpression.erase(stackExpression.begin() + i);
@@ -46,7 +55,7 @@ public:
     {
             stackExpression.push_back(type);
 
-            int i = stackExpression.size()-1;
+            auto i = stackExpression.size()-1;
             if(i < 1) return;
 
             int count = 0;
@@ -56,8 +65,8 @@ public:
             }
 
 
-            int x1 = stackExpression.size()-1;
-            int x2 = x1-1;
+            auto x1 = stackExpression.size()-1;
+            auto x2 = x1-1;
 
             if(count == 2) makeOperation(x1, x2);
     }
@@ -74,7 +83,7 @@ public:
             pushType(typeResult);
     }
 
-    void makeOperation(int x1, int x2) throw()
+    void makeOperation(unsigned int x1, unsigned int x2) throw()
     {
             if(stackExpression.at(x1) == ("integer") && stackExpression.at(x2) == ("integer")) {
                 if(getLastOperation() != ("relational")) {
@@ -126,7 +135,7 @@ public:
             }
     }
 
-    void verifyResult(std::string &typeVar) throw()
+    void verifyResult(const std::string &typeVar) throw()
     {
 
             if(stackExpression.at(0) == ("integer") && typeVar == ("integer")) {
@@ -154,7 +163,7 @@ public:
         stackExpression.clear();
     }
 
-    void pushOperation(std::string &operation) {
+    void pushOperation(const std::string &operation) {
         operationStack.push_back(operation);
     }
 
@@ -175,19 +184,22 @@ public:
         return callProcedure;
     }
 
-    void pushParameter(std::string type) {
+    void pushParameter(const std::string &type)
+    {
         procedureParametersStack.push_back(type);
     }
 
-    std::string getFirstType() {
+    std::string getFirstType()
+    {
         return stackExpression.at(0);
     }
 
-    void resetProcedureControl() {
+    void resetProcedureControl()
+    {
         procedureParametersStack.clear();
         stackExpression.clear();
         callProcedure = false;
-        this->procedureSymbol = nullptr;
+        this->procedureSymbol = nullptr ;
     }
 
     void verifyResultProcedureCall() throw()
@@ -200,7 +212,7 @@ public:
 
             } else
             {
-                for (int i = 0; i < procedureParametersStack.size(); i++) {
+                for (unsigned int i = 0; i < procedureParametersStack.size(); i++) {
                     if (procedureParametersStack.at(i) == ("integer") && procedureSymbol->getParamater(i).getType() == ("integer")) {
 
                     } else if (procedureParametersStack.at(i) == ("integer") && procedureSymbol->getParamater(i).getType() == ("real")) {
@@ -215,7 +227,6 @@ public:
                     }
                 }
             }
-
             resetProcedureControl();
     }
 

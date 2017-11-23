@@ -22,10 +22,9 @@ public:
     const static std::string multiplicationOperator;
     const static std::string accChars;
     const static std::string specialChars;
-    const static std::string specialChars2;
     const static std::array<std::string, 3> types;
 
-    Token() = default;
+    Token() : Token (std::string("")) {};
 
     Token(const Token &that)
     {
@@ -33,16 +32,18 @@ public:
         classification = that.classification;
         lineNumber = that.lineNumber;
     }
-    //Token() : Token ((std::string &) "") {}
-    //explicit Token(const std::string &text) : Token (text, Classifications::UNCLASSIFIED) {}
 
-    //Token(const std::string &text, int classification) : Token (text, classification, 0) {}
+    explicit Token(const std::string &text) : Token (text, Classifications::UNCLASSIFIED) {}
+
+    Token(const std::string &text, int classification) : Token (text, classification, 0) {}
 
     Token (std::string t, int c, int l) : text(std::move(t)), classification(c), lineNumber(l) {}
 
     std::string toString()
     {
-        std::string ret = "TOKEN: " + text + "\n" + "CLASSIFICATION: " + getClassificationName() + "\n" + "LINE: " + std::to_string(lineNumber);
+        std::string ret = "TOKEN: " + text + "\n"
+                          + "CLASSIFICATION: " + getClassificationName() + "\n"
+                          + "LINE: " + std::to_string(lineNumber);
         return ret;
     }
     std::string & getText() {return this->text;}

@@ -5,26 +5,6 @@
 #include <algorithm>
 #include <regex>
 
-bool containsKeyword(const std::string &word)
-{
-    for(std::string keyword : Token::keywords)
-    {
-        if(word == keyword) return true;
-    }
-
-    return false;
-}
-
-bool containsBooleanValues(const std::string &word)
-{
-    for(std::string keyword : Token::booleanValues)
-    {
-        if(word == keyword) return true;
-    }
-
-    return false;
-}
-
 void Tokenizer::parser()
 {
     try
@@ -34,7 +14,6 @@ void Tokenizer::parser()
             if (line.empty())
             {
                 lineNum += 1;
-                //std::cout << "line: " << line << std::endl;
                 continue;
             }
             parseLine(line);
@@ -64,8 +43,7 @@ void Tokenizer::parser()
 void Tokenizer::parseLine(const std::string &line)
 {
     sb = "";
-    unsigned int length = line.size();
-    int k = 0;
+    unsigned long long int length = line.size();
 
     for (unsigned int i = 0; i < length; i++)
     {
@@ -74,30 +52,18 @@ void Tokenizer::parseLine(const std::string &line)
         {
             onComment = true;
             i += parseComment(line.substr(i, length));
-            if (onComment)
-            {
-                continue;
-            }
-
+            if (onComment) continue;
         }
 
         //Comment line
-        if (line.at(i) == '/' && su.nextCharEquals(line, i, '/'))
-        {
-            //System.out.println("Line comment on line: " + (lineNum + 1));
-            return;
-        }
+        if (line.at(i) == '/' && su.nextCharEquals(line, i, '/')) return;
 
         //Strings
         if ((!onString && line.at(i) == '\'') || onString)
         {
             onString = true;
-
             i += parseString(line.substr(i, length));
-            if (onString)
-            {
-                continue;
-            }
+            if (onString) continue;
         }
 
         //Words
@@ -116,7 +82,7 @@ void Tokenizer::parseLine(const std::string &line)
 
         //Extras
         //All specialChars except for ".{}", as they were parsed before
-        if (Token::specialChars2.find(line.at(i)) != -1)
+        if (Token::specialChars.find(line.at(i)) != -1)
         {
             i += parseExtras(line.substr(i, length));
             continue;
@@ -126,10 +92,8 @@ void Tokenizer::parseLine(const std::string &line)
         if (Token::accChars.find(line.at(i)) == -1)
         {
             std::string errorMsg = "Character not allowed : " + std::string(1, line.at(i)) + "\nLine: " + std::to_string(lastOpenCommentLine + 1);
-            if (!DEBUG_MODE)
-            {
-                throw LexicalException(errorMsg);
-            }
+
+            if (!DEBUG_MODE) throw LexicalException(errorMsg);
 
             std::cout << errorMsg << std::endl;
         }
@@ -139,7 +103,7 @@ void Tokenizer::parseLine(const std::string &line)
 int Tokenizer::parseComment(const std::string &substring)
 {
     lastOpenCommentLine = lineNum;
-    unsigned int length = substring.length();
+    auto length = static_cast<unsigned int>(substring.length());
 
     for (unsigned int i = 0; i < length; i++)
     {
@@ -156,7 +120,7 @@ int Tokenizer::parseComment(const std::string &substring)
 int Tokenizer::parseString(const std::string &substring)
 {
     lastOpenStringLine = lineNum;
-    unsigned int length = substring.length();
+    auto length = static_cast<int>(substring.length());
 
     for (unsigned int i = 1; i < length; i++)
     {
@@ -174,15 +138,12 @@ int Tokenizer::parseWord(const std::string &substring)
 {
     sb = "";
     unsigned int i = 0;
-    unsigned int length = substring.length();
+    auto length = static_cast<unsigned int>(substring.length());
 
     //Extraction
     for (; i < length; i++)
     {
-        if (!(su.isLetterOrDigit(substring.at(i)) || substring.at(i) == '_'))
-        {
-            break;
-        }
+        if (!(su.isLetterOrDigit(substring.at(i)) || substring.at(i) == '_')) break;
         sb += substring.at(i);
     }
 
@@ -191,23 +152,23 @@ int Tokenizer::parseWord(const std::string &substring)
     //Classification
     if (containsKeyword(sb))
     {
-        tokens.push_back(Token(sb, Token::Classifications::KEYWORD, lineNum));
+        tokens.emplace_back(sb, Token::Classifications::KEYWORD, lineNum);
     }
     else if (containsBooleanValues(sb))
     {
-        tokens.push_back(Token(sb, Token::Classifications::BOOLEAN, lineNum));
+        tokens.emplace_back(sb, Token::Classifications::BOOLEAN, lineNum);
     }
     else if (sb == (Token::additionOperator))
     {
-        tokens.push_back(Token(sb, Token::Classifications::ADDITION, lineNum));
+        tokens.emplace_back(sb, Token::Classifications::ADDITION, lineNum);
     }
     else if (sb == Token::multiplicationOperator)
     {
-        tokens.push_back(Token(sb, Token::Classifications::MULTIPLICATION, lineNum));
+        tokens.emplace_back(sb, Token::Classifications::MULTIPLICATION, lineNum);
     }
     else
     {
-        tokens.push_back(Token(sb, Token::Classifications::IDENTIFIER, lineNum));
+        tokens.emplace_back(sb, Token::Classifications::IDENTIFIER, lineNum);
     }
 
     return (i == length) ? length - 1 : (i - 1);
@@ -231,7 +192,7 @@ int Tokenizer::parseNum(const std::string &substring)
     //Starts with a dot but subsequent characters are not a number. It's treated as a DELIMITER dot
     if (!std::regex_search(substring, match, regComp) && !std::regex_search(substring, match, regReal) && !std::regex_search(substring, match, regInt))
     {
-        tokens.push_back(Token(".", Token::Classifications::DELIMITER, lineNum));
+        tokens.emplace_back(".", Token::Classifications::DELIMITER, lineNum);
         return 0;
     }
 
@@ -242,8 +203,8 @@ int Tokenizer::parseNum(const std::string &substring)
 
         if (substring.substr(0, search.size()) == search)
         {
-            tokens.push_back(Token(search, Token::Classifications::COMPLEX, lineNum));
-            return search.size() - 1;
+            tokens.emplace_back(search, Token::Classifications::COMPLEX, lineNum);
+            return static_cast<unsigned int>(search.size() - 1);
         }
     }
 
@@ -253,8 +214,8 @@ int Tokenizer::parseNum(const std::string &substring)
 
         if (substring.substr(0, search.size()) == search)
         {
-            tokens.push_back(Token(search, Token::Classifications::REAL, lineNum));
-            return search.size() - 1;
+            tokens.emplace_back(search, Token::Classifications::REAL, lineNum);
+            return static_cast<unsigned int>(search.size() - 1);
         }
     }
 
@@ -267,18 +228,14 @@ int Tokenizer::parseNum(const std::string &substring)
 
         if (substring.substr(0, search.size()) == search) {
 
-            tokens.push_back(Token(search, Token::Classifications::INTEGER, lineNum));
-            return search.size() - 1;
+            tokens.emplace_back(search, Token::Classifications::INTEGER, lineNum);
+            return static_cast<unsigned int>(search.size() - 1);
         }
     }
 
         //In case some unexpected input is read.
     std::string errorMsg = "Unexpected input: " + substring + "\nline " + std::to_string(lineNum + 1);
-    if (!DEBUG_MODE)
-    {
-        throw LexicalException(errorMsg);
-    }
-
+    if (!DEBUG_MODE) throw LexicalException(errorMsg);
     std::cout << errorMsg << std::endl;
     return 0;
 }
@@ -286,7 +243,7 @@ int Tokenizer::parseNum(const std::string &substring)
 int Tokenizer::parseExtras(const std::string &substring)
 {
     sb = "";
-    int i = 0;
+    unsigned int i = 0;
     sb += substring.at(0);
 
     std::string s = ">=";
@@ -329,9 +286,11 @@ int Tokenizer::parseExtras(const std::string &substring)
         case '*': case '/':
             classification = Token::Classifications::MULTIPLICATION;
             break;
+        default:
+            break;
     }
 
-    tokens.push_back(Token(sb, classification, lineNum));
+    tokens.emplace_back(sb, classification, lineNum);
 
     return i;
 }

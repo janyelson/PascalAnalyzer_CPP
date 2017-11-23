@@ -20,7 +20,7 @@ int main() {
 
     try
     {
-        Tokenizer tokenizer(lines, true);
+        Tokenizer tokenizer(lines, false);
         tokenizer.parser();
 
         std::vector<Token> tokens(tokenizer.getTokens());
@@ -30,7 +30,7 @@ int main() {
             std::cout << token.toString() << "\n\n";
         }
 
-        SyntaxAnalyzer syntaxAnalyzer(tokens, true);
+        SyntaxAnalyzer syntaxAnalyzer(tokens, false);
         syntaxAnalyzer.run();
     }
     catch (std::exception &ex)

@@ -38,6 +38,22 @@ public:
         }
     }
 
+    Tokenizer(const Tokenizer &that)
+    {
+        lines = that.lines;
+        tokens = that.tokens;
+        lineNum = that.lineNum;
+
+        DEBUG_MODE = that.DEBUG_MODE;
+        onComment = that.onComment;
+        lastOpenCommentLine = that.lastOpenCommentLine;
+        onString = that.onString;
+        lastOpenStringLine = that.lastOpenStringLine;
+
+        sb = that.sb;
+        su = that.su;
+    }
+
     explicit Tokenizer(std::vector<std::string> &lines) : Tokenizer(lines, false) {}
 
     std::vector<Token> getTokens()
@@ -60,6 +76,26 @@ private:
     int parseNum(const std::string &substring);
 
     int parseExtras(const std::string &substring);
+
+    bool containsKeyword(const std::string &word) const
+    {
+        for(const std::string &keyword : Token::keywords)
+        {
+            if(word == keyword) return true;
+        }
+
+        return false;
+    }
+
+    bool containsBooleanValues(const std::string &word) const
+    {
+        for(const std::string &keyword : Token::booleanValues)
+        {
+            if(word == keyword) return true;
+        }
+
+        return false;
+    }
 
     void lexicalError(std::string errorMsg) throw()
     {

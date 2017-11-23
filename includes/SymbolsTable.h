@@ -21,8 +21,14 @@ public:
 
     SymbolsTable() = default;
 
-    std::string & getType(std::string &identifierName) {
-        int i = stack.size() - 1;
+    SymbolsTable(const SymbolsTable &that)
+    {
+        stack = that.stack;
+    }
+
+    std::string & getType(const std::string &identifierName)
+    {
+        auto i = (stack.size() - 1);
         while(i >= 0) {
             if(stack.at(i).getName() == (identifierName)) return stack.at(i).getType();
             i--;
@@ -33,11 +39,11 @@ public:
 
     void enterScope()
     {
-        stack.push_back(Symbol(MARK, MARK_TYPE));
+        stack.emplace_back(MARK, MARK_TYPE);
     }
 
     void exitScope() {
-        int i = stack.size() - 1;
+        auto i = stack.size() - 1;
         while(stack.at(i).getName() != (MARK)) {
             stack.erase(stack.begin() + i);
             i--;
@@ -46,9 +52,9 @@ public:
         stack.erase(stack.begin() + i);
     }
 
-    bool searchDuplicateDeclaration(std::string &identifierName) {
+    bool searchDuplicateDeclaration(const std::string &identifierName) {
 
-        int i = stack.size() - 1;
+        auto i = stack.size() - 1;
         while(stack.at(i).getName() != (MARK)) {
             if(stack.at(i).getName() == (identifierName)) return true;
             i--;
@@ -57,8 +63,8 @@ public:
         return false;
     }
 
-    bool searchIdentifier(std::string &identifierName) {
-        int i = stack.size() - 1;
+    bool searchIdentifier(const std::string &identifierName) {
+        auto i = stack.size() - 1;
         while(i >= 0) {
             if(stack.at(i).getName() == (identifierName)) return true;
             i--;
@@ -67,12 +73,13 @@ public:
         return false;
     }
 
-    void addSymbol(Symbol symbol) {
-        stack.push_back(symbol);
+    void addSymbol(const std::string &text, const std::string &type)
+    {
+        stack.emplace_back(text, type);
     }
 
     void assignType(std::string type) {
-        int i = stack.size() - 1;
+        auto i = stack.size() - 1;
 
         while(stack.at(i).getType() == "void") {
             stack.at(i).setType(type);
@@ -83,7 +90,7 @@ public:
     void assignParameters()
     {
         Symbol procedureSymbol = getLastProcedure();
-        int i = stack.size() - 1;
+        auto i = stack.size() - 1;
 
         while(stack.at(i).getType() != ("procedure")) {
             if(stack.at(i).getType() != (MARK_TYPE)) procedureSymbol.addParameter(stack.at(i));
@@ -92,26 +99,30 @@ public:
 
     }
 
-    Symbol & getLastProcedure() {
+    Symbol & getLastProcedure()
+    {
 
-        int i = stack.size() - 1;
+        auto i = stack.size() - 1;
 
-        while(stack.at(i).getType() != ("procedure")) {
+        while(stack.at(i).getType() != ("procedure"))
+        {
             i--;
         }
         return stack.at(i);
     }
 
     Symbol & getProcedure(std::string &procedureName) {
-        int i = stack.size() - 1;
-        while(stack.at(i).getName() != (procedureName) && stack.at(i).getType() == ("procedure") ) {
+        auto i = stack.size() - 1;
+        while(stack.at(i).getName() != (procedureName) && stack.at(i).getType() == ("procedure") )
+        {
             i--;
         }
 
         return stack.at(i);
     }
 
-    std::string getProgramName() {
+    std::string getProgramName()
+    {
         return stack.at(1).getName();
     }
 

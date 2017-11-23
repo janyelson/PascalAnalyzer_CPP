@@ -2,6 +2,7 @@
 #define PASCALANAYZER_SYMBOL_H
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <iostream>
 
@@ -12,7 +13,19 @@ class Symbol
     std::vector<Symbol>* parameters = nullptr;
 
 public:
-    Symbol(std::string &n, std::string &t) : name(n), type(t)
+
+    Symbol() = default;
+
+    Symbol (const Symbol &that)
+    {
+        name = that.name;
+        type = that.type;
+        parameters = that.parameters;
+    }
+
+    explicit Symbol(std::string &n) : name(n), type("void"){}
+
+    Symbol(std::string n, std::string t) : name(std::move(n)), type(std::move(t))
     {
         if(type == "procedure")
         {
@@ -20,16 +33,13 @@ public:
         }
     }
 
-    explicit Symbol(std::string &n) : name(n), type("void"){}
-
-    Symbol() = default;
-
     /**
      * Get a name of identifier.
      *
      * @return name of identifier
      */
-    std::string getName() {
+    std::string getName()
+    {
         return name;
     }
 
@@ -38,7 +48,8 @@ public:
      *
      * @return type of identifier
      */
-    std::string & getType() {
+    std::string & getType()
+    {
         return type;
     }
 
@@ -47,7 +58,8 @@ public:
      *
      * @param type will be add to identifier
      */
-    void setType(std::string &type){
+    void setType(const std::string &type)
+    {
         this->type = type;
     }
 
@@ -56,8 +68,9 @@ public:
  *
  * @return return amount of parameters.
  */
-    int getParametersSize() {
-        return parameters->size();
+    int getParametersSize()
+    {
+        return static_cast<int>(parameters->size());
     }
 
 /**
@@ -66,7 +79,8 @@ public:
  * @param i position
  * @return return a name parameter.
  */
-    Symbol getParamater(int i) {
+    Symbol getParamater(unsigned int i)
+    {
         return parameters->at(i);
     }
 

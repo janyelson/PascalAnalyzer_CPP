@@ -15,7 +15,10 @@ public:
      * @param idx    Index for testing.
      * @return true, if idx is greater than or equal to the string length; false, otherwise.
      */
-    bool isLastChar(const std::string &str, int idx) {return (idx + 1 >= str.length());}
+    bool isLastChar(const std::string &str, int idx) const
+    {
+        return (idx + 1 >= str.length());
+    }
 
     /**
      * Checks on the string if the next char, of the specified index, equals to a char.
@@ -25,7 +28,10 @@ public:
      * @param c      Char to be tested.
      * @return true, if the idx is valid and not the last of the string and the following char equals to char c.
      */
-    bool nextCharEquals(const std::string &str, unsigned int idx, char c) {return !isLastChar(str, idx) && str.at(idx + 1) == c;}
+    bool nextCharEquals(const std::string &str, unsigned int idx, char c) const
+    {
+        return !isLastChar(str, idx) && str.at(idx + 1) == c;
+    }
 
 
     /**
@@ -36,7 +42,7 @@ public:
      * @param chars  A not null String containing all chars to be verified.
      * @return true, if the idx is valid and not the last of the string and the following char is in String chars.
      */
-    bool nextCharIsIn(const std::string &str, unsigned int idx, std::string &chars)
+    bool nextCharIsIn(const std::string &str, unsigned int idx, std::string &chars) const
     {
         return !isLastChar(str, idx) && chars.find(str.at(idx + 1)) != -1;;
     }
@@ -48,7 +54,10 @@ public:
      * @param c Char to be tested.
      * @return true, if the character is in [a-z] or [A-Z]; false, otherwise.
      */
-    bool isLetter(const char c) {return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');}
+    bool isLetter(const char c) const
+    {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
 
     /**
      * Checks if the char is one of the ISO-LATIN-1 digits.
@@ -56,7 +65,10 @@ public:
      * @param c Char to be tested.
      * @return true, if the char is one of the ISO-LATIN-1 digits; false, otherwise.
      */
-    bool isDigit(const char c) {return (c >= '0' && c <= '9');}
+    bool isDigit(const char c) const
+    {
+        return (c >= '0' && c <= '9');
+    }
 
     /**
      * Checks if the char is in [a-z] or [A-Z] or is one of the ISO-LATIN-1 digits.
@@ -65,7 +77,10 @@ public:
      * @param c Char to be tested.
      * @return true, if the character is in [a-z] or [A-Z]; false, otherwise.
      */
-    bool isLetterOrDigit(const char c) {return isLetter(c) || isDigit(c);}
+    bool isLetterOrDigit(const char c) const
+    {
+        return isLetter(c) || isDigit(c);
+    }
 };
 
 #endif // STRINGUTILS_H_INCLUDED
